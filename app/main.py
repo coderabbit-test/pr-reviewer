@@ -1,6 +1,8 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+import traceback
+from fastapi import Request
 from .auth.routes import router as auth_router
 from .example_protected_routes import router as protected_router
 import os
@@ -28,11 +30,23 @@ app.include_router(auth_router)
 app.include_router(protected_router)
 
 # Global exception handler
+
+
 @app.exception_handler(Exception)
-async def global_exception_handler(request, exc):
+async def global_exception_handler(request: Request, exc: Exception):
+    # Log full traceback (could also write to a file or logging service)
+    print(f"Unhandled Exception: {exc}")
+    traceback.print_exc()
+
+    # You can add more detailed errors in dev mode
+    is_dev = os.environ.get("ENV", "dev") == "dev"
     return JSONResponse(
         status_code=500,
-        content={"detail": "Internal server error"}
+        content={
+            "detail": "Internal server error",
+            "error": str(exc) if is_dev else None,
+            "path": request.url.path
+        },
     )
 
 # Health check endpoint
