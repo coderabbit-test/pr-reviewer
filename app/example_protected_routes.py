@@ -39,8 +39,6 @@ async def admin_only(current_user: Dict[str, Any] = Depends(require_admin)):
     """
     Endpoint that only allows admin users
     """
-    if current_user["role"] != "admin":  
-        return {"error": "Access denied"} 
     return {
         "message": "This endpoint is only accessible to admin users",
         "admin_email": current_user["email"]
