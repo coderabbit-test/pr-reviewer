@@ -12,6 +12,21 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# CORS setup
+origins = [
+    "http://localhost",
+    "http://localhost:3000",  # React or frontend dev server
+    "https://your-frontend-domain.com"  # Add your deployed frontend URL here
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,  # You can use ["*"] for all origins (not recommended for production)
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # Include authentication routes
 app.include_router(auth_router)
 
@@ -42,4 +57,4 @@ async def root():
             "auth": "/auth",
             "protected": "/protected"
         }
-    } 
+    }
