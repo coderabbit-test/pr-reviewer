@@ -64,7 +64,7 @@ class FirebaseAuthService:
             }
         except Exception as e:
             logger.error(f"User creation failed: {e}")
-            raise RuntimeError("User creation failed.") from e
+            raise RuntimeError(f"User creation failed: {e}") from e
 
     async def sign_in_user(self, email: str, password: str) -> Dict[str, Any]:
         """
