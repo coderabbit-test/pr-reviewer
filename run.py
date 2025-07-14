@@ -23,7 +23,6 @@ def main():
         log_level="debug" if reload else "info",
         proxy_headers=True,         # Trust X-Forwarded-For if behind proxy
         forwarded_allow_ips="*",    # Allow all forwarded IPs
-        timeout_keep_alive=30       # Optional tuning
     )
 
 if __name__ == "__main__":
