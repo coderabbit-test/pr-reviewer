@@ -120,7 +120,7 @@ class FirebaseAuthService:
         try:
             payload = jwt.decode(refresh_token, self.jwt_secret, algorithms=[self.jwt_algorithm])
             if payload.get("type") != "refresh":
-                raise ValueError("Invalid token type for refresh")
+                raise PermissionError("Invalid token type for refresh")
 
             user_id = payload.get("user_id")
             user_record = auth.get_user(user_id)
