@@ -24,7 +24,7 @@ async def get_user_info(current_user: Dict[str, Any] = Depends(get_current_user)
 
 
 @router.get("/active-only")
-async def active_users_only(current_user: Dict[str, Any] = Depends(get_current_user)):
+async def active_users_only(current_user: Dict[str, Any] = Depends(get_current_active_user)):
     """
     Endpoint that only allows active users
     """
