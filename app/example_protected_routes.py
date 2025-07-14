@@ -83,7 +83,7 @@ async def create_resource(
 
 @router.delete("/delete-resource/{resource_id}")
 async def delete_resource(
-    resource_id: int,  
+    resource_id: str,  
     current_user: Dict[str, Any] = Depends(get_current_user)  
 ):
     """
