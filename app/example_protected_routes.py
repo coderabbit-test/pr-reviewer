@@ -18,7 +18,7 @@ async def get_user_info(current_user: Dict[str, Any] = Depends(get_current_user)
             "email": current_user.get("email", "unknown"),
             "first_name": current_user["first_name"],
             "last_name": current_user["last_name"],
-            "role": current_user["roles"] 
+            "role": current_user["role"]
         }
     }
 
