@@ -14,9 +14,7 @@ app = FastAPI(
 
 # CORS setup
 origins = [
-    "http://localhost",
-    "http://localhost:3000",  # React or frontend dev server
-    "https://your-frontend-domain.com"  # Add your deployed frontend URL here
+    "https://bubblesort.vercel.com"  # Add your deployed frontend URL here
 ]
 
 app.add_middleware(
