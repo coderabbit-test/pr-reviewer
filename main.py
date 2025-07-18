@@ -18,6 +18,3 @@ def main():
         print(json.dumps(event_data, indent=2))
     except Exception as e:
         print(f"Error reading event data: {e}")
-
-if __name__ == "__main__":
-    main()
