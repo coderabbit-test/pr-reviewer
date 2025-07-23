@@ -1,4 +1,3 @@
-
 def bubble_sort(arr):
     """
     Performs in-place Bubble Sort on a list.
@@ -43,8 +42,45 @@ def insertion_sort(arr):
         arr[j + 1] = key
 
 
+def merge_sort(arr):
+    """
+    Performs Merge Sort (not in-place).
+    Recursively divides the list and merges sorted halves.
+    """
+    if len(arr) <= 1:
+        return arr
+
+    mid = len(arr) // 2
+    left = merge_sort(arr[:mid])
+    right = merge_sort(arr[mid:])
+
+    return merge(left, right)
+
+
+def merge(left, right):
+    """
+    Helper function to merge two sorted lists.
+    """
+    result = []
+    i = j = 0
+
+    # Merge the two halves
+    while i < len(left) and j < len(right):
+        if left[i] <= right[j]:
+            result.append(left[i])
+            i += 1
+        else:
+            result.append(right[j])
+            j += 1
+
+    # Append any remaining elements
+    result.extend(left[i:])
+    result.extend(right[j:])
+    return result
+
+
 # Sample input
-original = [6, 6, 2]
+original = [6, 6, 2, 3, 2]
 
 print("Original list:")
 print(original)
@@ -67,13 +103,19 @@ insertion_sort(arr3)
 print("\nInsertion Sort result:")
 print(arr3)
 
-# Python built-in sort (in-place)
+# Merge Sort (not in-place)
 arr4 = original.copy()
-arr4.sort()
+arr4_sorted = merge_sort(arr4)
+print("\nMerge Sort result:")
+print(arr4_sorted)
+
+# Python built-in sort (in-place)
+arr5 = original.copy()
+arr5.sort()
 print("\nPython .sort() result:")
-print(arr4)
+print(arr5)
 
 # Python built-in sorted() (returns new list)
-arr5 = sorted(original)
+arr6 = sorted(original)
 print("\nPython sorted() result (non-in-place):")
-print(arr5)
+print(arr6)
