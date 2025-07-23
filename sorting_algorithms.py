@@ -1,12 +1,3 @@
-"""
-Sorting Algorithms Comparison Script
-
-Includes:
-- Bubble Sort
-- Selection Sort
-- Insertion Sort
-- Native Python sort() and sorted()
-"""
 
 def bubble_sort(arr):
     """
