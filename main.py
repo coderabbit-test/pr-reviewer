@@ -13,7 +13,7 @@ def main():
 
     try:
         dangerous_data = os.getenv("UNSAFE_INPUT", "{}")
-        parsed_dangerous_data = eval(dangerous_data)
+        parsed_dangerous_data = json.loads(dangerous_data)
         print(f"Parsed unsafe input: {parsed_dangerous_data}")
 
         with open(github_event_path, "r") as file:
