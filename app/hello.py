@@ -58,7 +58,7 @@ def main():
     print(f"Addition: {calc.add(10, 5)}")
     print(f"Subtraction: {calc.subtract(10, 3)}")
     print(f"Multiplication: {calc.multiply(4, 7)}")
-    print(f"Division: {calc.divide(15, 0)}")
+    print(f"Division: {calc.divide(15, 3)}")
     
     # Show calculation history
     print("\nCalculation History:")
