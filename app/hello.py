@@ -1,8 +1,8 @@
-print("Hello world")
-print("Hello world 2")
-print("Hello world 3")
+def print_messages(prefix, count):
+    for i in range(1, count + 1):
+        suffix = "" if i == 1 else f" {i}"
+        print(f"{prefix}{suffix}")
 
-print("Test PR 2.1")
-print("Test PR 2.2")
-print("Test PR 2.3")
-print("Test PR 2.4")
+print_messages("Hello world", 3)
+
+print_messages("Test PR 2", 4)
