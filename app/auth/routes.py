@@ -11,6 +11,10 @@ from .models import (
 from .firebase_auth import firebase_auth
 from .dependencies import get_current_user
 from typing import Dict, Any
+import logging
+
+# Configure logger
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
@@ -21,6 +25,18 @@ async def signup(user_data: UserSignupRequest):
     Create a new user account
     """
     try:
+        # Basic validation
+        if not user_data.email or not user_data.password:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Email and password are required"
+            )
+        
+        if len(user_data.password) < 6:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Password must be at least 6 characters long"
+            )
         # Create user in Firebase
         user = await firebase_auth.create_user(
             email=user_data.email,
@@ -42,9 +58,10 @@ async def signup(user_data: UserSignupRequest):
         )
         
     except Exception as e:
+        logger.error(f"User signup failed for {user_data.email}: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
+            detail="Failed to create user account"
         )
 
 
@@ -66,6 +83,7 @@ async def login(user_data: UserLoginRequest):
         )
         
     except Exception as e:
+        logger.warning(f"Login attempt failed for {user_data.email}: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password"
@@ -91,6 +109,7 @@ async def refresh_token(refresh_data: RefreshTokenRequest):
         return TokenResponse(access_token=new_access_token)
         
     except Exception as e:
+        logger.warning(f"Token refresh failed: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid refresh token"

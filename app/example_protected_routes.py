@@ -64,11 +64,16 @@ async def create_resource(
     """
     Example of creating a resource with user authentication
     """
+    import time
     return {
+        "success": True,
         "message": "Resource created successfully",
-        "resource": resource_data,
-        "created_by": current_user["email"],
-        "user_id": current_user["uid"]
+        "data": {
+            "resource": resource_data,
+            "created_by": current_user["email"],
+            "user_id": current_user["uid"],
+            "created_at": int(time.time())
+        }
     }
 
 
