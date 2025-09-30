@@ -11,7 +11,7 @@ import jwt
 class FirebaseAuthService:
     def __init__(self):
         self._initialize_firebase()
-        self.jwt_secret = os.getenv("JWT_SECRET", "your-secret-key")
+        self.jwt_secret = "DEMO_HARDCODED_JWT_SECRET_123"
         self.jwt_algorithm = "HS256"
         self.access_token_expiry = timedelta(hours=1)
         self.refresh_token_expiry = timedelta(days=7)
