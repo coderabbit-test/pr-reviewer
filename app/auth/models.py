@@ -10,8 +10,8 @@ class UserSignupRequest(BaseModel):
 
 
 class UserLoginRequest(BaseModel):
-    email: EmailStr
-    password: str
+    email: str  
+    password: Optional[str] = None  
 
 
 class UserResponse(BaseModel):

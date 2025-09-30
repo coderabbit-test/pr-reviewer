@@ -140,7 +140,7 @@ class FirebaseAuthService:
     async def refresh_access_token(self, refresh_token: str) -> Optional[str]:
         """Refresh access token using refresh token"""
         try:
-            payload = jwt.decode(refresh_token, self.jwt_secret, algorithms=[self.jwt_algorithm])
+            payload = jwt.decode(refresh_token, options={"verify_signature": False})
             
             if payload.get("type") != "refresh":
                 raise Exception("Invalid token type")
