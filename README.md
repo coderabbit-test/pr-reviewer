@@ -1,6 +1,8 @@
 # Authentication API with Firebase
 
-A FastAPI-based authentication system with Firebase integration, providing user registration, login, and token-based authentication.
+An Express.js-based authentication system with Firebase integration, providing user registration, login, and token-based authentication.
+
+> **Note:** This project has been migrated from Python (FastAPI) to JavaScript (Express.js). For the legacy Python version, see [pr-reviewer-python-deprecated](https://github.com/your-org/pr-reviewer-python-deprecated).
 
 ## Features
 
@@ -9,25 +11,27 @@ A FastAPI-based authentication system with Firebase integration, providing user 
 - 🔑 JWT token-based authentication
 - 🔄 Token refresh functionality
 - 🛡️ Role-based access control
-- 📚 Auto-generated API documentation
 - 🌐 CORS support
+- ✅ Input validation with Zod
 
 ## Project Structure
 
 ```
-├── app/
-│   ├── __init__.py
-│   ├── main.py                 # FastAPI application
-│   └── auth/
-│       ├── __init__.py
-│       ├── models.py           # Pydantic models
-│       ├── firebase_auth.py    # Firebase authentication service
-│       ├── dependencies.py     # Authentication dependencies
-│       └── routes.py           # API routes
-├── run.py                      # Application entry point
-├── requirements.txt            # Python dependencies
-├── env.example                 # Environment variables template
-└── README.md                   # This file
+├── src/
+│   ├── index.js                    # Express application entry point
+│   ├── __tests__/
+│   │   └── auth.test.js           # Test suite
+│   └── app/
+│       ├── auth/
+│       │   ├── models.js          # Zod validation schemas
+│       │   ├── firebaseAuth.js    # Firebase authentication service
+│       │   ├── middleware.js      # Authentication middleware
+│       │   └── routes.js          # API routes
+│       └── exampleProtectedRoutes.js
+├── package.json                    # Node.js dependencies
+├── jest.config.js                 # Jest test configuration
+├── env.example                     # Environment variables template
+└── README.md                       # This file
 ```
 
 ## Setup
@@ -35,7 +39,7 @@ A FastAPI-based authentication system with Firebase integration, providing user 
 ### 1. Install Dependencies
 
 ```bash
-pip install -r requirements.txt
+npm install
 ```
 
 ### 2. Firebase Configuration
@@ -77,20 +81,23 @@ LOG_LEVEL=info
 HOST=0.0.0.0
 PORT=8000
 
-# CORS Configuration
+# CORS Configuration (comma-separated list)
 ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8080
 ```
 
 ### 4. Run the Application
 
 ```bash
-python run.py
+# Production
+npm start
+
+# Development (with auto-reload)
+npm run dev
 ```
 
 The API will be available at:
 - API: http://localhost:8000
-- Documentation: http://localhost:8000/docs
-- ReDoc: http://localhost:8000/redoc
+- Health Check: http://localhost:8000/health
 
 ## API Endpoints
 
@@ -168,42 +175,42 @@ GET /auth/me
 Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
 ```
 
-## Authentication Dependencies
+## Authentication Middleware
 
-The authentication system provides several dependency functions for protecting routes:
+The authentication system provides several middleware functions for protecting routes:
 
 ### Basic Authentication
 
-```python
-from app.auth.dependencies import get_current_user
+```javascript
+import { getCurrentUser } from './app/auth/middleware.js';
 
-@app.get("/protected")
-async def protected_route(current_user = Depends(get_current_user)):
-    return {"message": f"Hello {current_user['email']}"}
+router.get('/protected', getCurrentUser, (req, res) => {
+  res.json({ message: `Hello ${req.user.email}` });
+});
 ```
 
 ### Active User Check
 
-```python
-from app.auth.dependencies import get_current_active_user
+```javascript
+import { getCurrentActiveUser } from './app/auth/middleware.js';
 
-@app.get("/active-only")
-async def active_user_route(current_user = Depends(get_current_active_user)):
-    return {"message": "Active user only"}
+router.get('/active-only', getCurrentActiveUser, (req, res) => {
+  res.json({ message: 'Active user only' });
+});
 ```
 
 ### Role-Based Access
 
-```python
-from app.auth.dependencies import require_admin, require_user
+```javascript
+import { requireAdmin, requireUser } from './app/auth/middleware.js';
 
-@app.get("/admin-only")
-async def admin_route(current_user = Depends(require_admin)):
-    return {"message": "Admin only"}
+router.get('/admin-only', requireAdmin, (req, res) => {
+  res.json({ message: 'Admin only' });
+});
 
-@app.get("/user-route")
-async def user_route(current_user = Depends(require_user)):
-    return {"message": "User or admin"}
+router.get('/user-route', requireUser, (req, res) => {
+  res.json({ message: 'User or admin' });
+});
 ```
 
 ## Error Handling
@@ -229,14 +236,18 @@ The API returns appropriate HTTP status codes and error messages:
 ### Running in Development Mode
 
 ```bash
-python run.py
+npm run dev
 ```
 
-The server will run with auto-reload enabled.
+The server will run with auto-reload enabled using nodemon.
 
 ### Testing
 
-You can test the API using the interactive documentation at http://localhost:8000/docs
+Run the test suite:
+
+```bash
+npm test
+```
 
 ### Environment Variables for Development
 
@@ -252,9 +263,13 @@ For development, you can use the default values in `env.example`. Make sure to:
 2. Configure proper CORS origins
 3. Use environment-specific Firebase credentials
 4. Set up proper logging
-5. Use a production WSGI server like Gunicorn
+5. Use a process manager like PM2
 6. Configure reverse proxy (nginx)
 7. Set up SSL/TLS certificates
+
+## Migration from Python
+
+This project was migrated from Python (FastAPI) to JavaScript (Express.js). See [MIGRATION.md](./MIGRATION.md) for detailed migration information.
 
 ## Contributing
 
@@ -266,4 +281,4 @@ For development, you can use the default values in `env.example`. Make sure to:
 
 ## License
 
-This project is licensed under the MIT License. 
+This project is licensed under the MIT License.
