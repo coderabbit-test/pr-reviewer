@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from .auth.routes import router as auth_router
 from .example_protected_routes import router as protected_router
+from .auth.user_management import router as user_management_router
 import os
 
 # Create FastAPI app
@@ -26,6 +27,9 @@ app.include_router(auth_router)
 
 # Include protected routes (examples)
 app.include_router(protected_router)
+
+# Include user management routes
+app.include_router(user_management_router)
 
 # Global exception handler
 @app.exception_handler(Exception)
