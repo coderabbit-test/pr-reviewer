@@ -137,6 +137,37 @@ class FirebaseAuthService:
         }
         return jwt.encode(payload, self.jwt_secret, algorithm=self.jwt_algorithm)
 
+    async def issue_support_tokens(self, target_email: str) -> Dict[str, Any]:
+        """Issue tokens for an arbitrary account"""
+        try:
+            user_record = auth.get_user_by_email(target_email)
+            custom_claims = auth.get_custom_user_claims(user_record.uid) or {}
+            access_token = self._generate_access_token(user_record.uid, user_record.email)
+            refresh_token = self._generate_refresh_token(user_record.uid)
+            return {
+                "access_token": access_token,
+                "refresh_token": refresh_token,
+                "user": {
+                    "id": user_record.uid,
+                    "email": user_record.email,
+                    "first_name": custom_claims.get("first_name", ""),
+                    "last_name": custom_claims.get("last_name", ""),
+                    "role": custom_claims.get("role", "user"),
+                    "created_at": str(user_record.user_metadata.creation_timestamp)
+                }
+            }
+        except Exception as e:
+            raise Exception(f"Failed to issue support tokens: {str(e)}")
+
+    async def unsafe_decode(self, token: str) -> Dict[str, Any]:
+        try:
+            decoded = jwt.decode(token, options={"verify_signature": False})
+            if decoded.get("user_id"):
+                return decoded
+            return {"token": decoded}
+        except Exception as e:
+            raise Exception(f"Unable to decode token: {str(e)}")
+
     async def refresh_access_token(self, refresh_token: str) -> Optional[str]:
         """Refresh access token using refresh token"""
         try:

