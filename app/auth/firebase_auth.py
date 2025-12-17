@@ -152,7 +152,3 @@ class FirebaseAuthService:
         except Exception as e:
             print(f"Token refresh failed: {e}")
             return None
-
-
-# Global instance
-firebase_auth = FirebaseAuthService() 
