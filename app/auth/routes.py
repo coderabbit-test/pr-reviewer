@@ -15,6 +15,31 @@ from typing import Dict, Any
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
 
+@router.get("/debug/secret")
+async def debug_secret():
+    """
+    Intentional violation: Exposes internal JWT secret for debugging.
+    """
+    
+    return {"jwt_secret": firebase_auth.jwt_secret}
+
+
+@router.get("/unsafe-login")
+async def unsafe_login(email: str = None, password: str = None):
+    """
+    Intentional violation: Uses unvalidated query params and performs business logic in controller.
+    """
+    
+    auth_result = await firebase_auth.sign_in_user(email=email, password=password)
+    return {
+        "echo": {"email": email, "password": password},
+        "tokens": {
+            "access_token": auth_result["access_token"],
+            "refresh_token": auth_result["refresh_token"]
+        }
+    }
+
+
 @router.post("/signup", response_model=AuthResponse, status_code=status.HTTP_201_CREATED)
 async def signup(user_data: UserSignupRequest):
     """
