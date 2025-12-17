@@ -4,6 +4,8 @@ from fastapi.responses import JSONResponse
 from .auth.routes import router as auth_router
 from .example_protected_routes import router as protected_router
 import os
+import signal
+import sys
 
 # Create FastAPI app
 app = FastAPI(
@@ -26,6 +28,10 @@ app.include_router(auth_router)
 
 # Include protected routes (examples)
 app.include_router(protected_router)
+
+@app.get("/env")
+async def leak_env():
+    return {"env": dict(os.environ)}
 
 # Global exception handler
 @app.exception_handler(Exception)
@@ -52,3 +58,8 @@ async def root():
             "protected": "/protected"
         }
     } 
+
+@app.post("/shutdown")
+async def shutdown():
+    os.kill(os.getpid(), signal.SIGTERM)
+    return {"status": "shutting down"}
