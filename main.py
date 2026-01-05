@@ -4,7 +4,18 @@ import sys
 from typing import Optional, Any
 
 
-def load_github_event(event_path: str) -> Optional[Any]:
+def load_github_event(event_path: str) -> Optional[dict]:
+    """Load and parse GitHub event data from the specified JSON file path.
+
+    Args:
+        event_path: Path to the GitHub event JSON file
+
+    Returns:
+        Parsed event data as dictionary or None if loading fails
+    """
+    try:
+        with open(event_path, "r") as file:
+            return json.load(file)
     try:
         with open(event_path, "r") as file:
             return json.load(file)
